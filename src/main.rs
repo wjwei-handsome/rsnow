@@ -33,6 +33,10 @@ struct Args {
     /// If you want to remove the Christmas tree
     #[arg(short, long, default_value_t = false)]
     notree: bool,
+
+    /// If rainbow mode is enabled
+    #[arg(short, long, default_value_t = false)]
+    rainbow: bool,
 }
 
 struct Snowflake {
@@ -41,12 +45,36 @@ struct Snowflake {
     color: Color,
 }
 
+fn get_snowflake(rainbow: bool, width: u16) -> Snowflake {
+    // Default color is white
+    let mut color = Color::White;
+    // Generate random color if rainbow mode is enabled
+    if rainbow {
+        let rd_r = rand::random::<u8>();
+        let rd_g = rand::random::<u8>();
+        let rd_b = rand::random::<u8>();
+        color = Color::Rgb {
+            r: rd_r,
+            g: rd_g,
+            b: rd_b,
+        }
+    }
+
+    // Return snowflake
+    Snowflake {
+        x: rand::random::<u16>() % width,
+        y: 0,
+        color,
+    }
+}
+
 fn main() {
     // CLI
     let args = Args::parse();
     let speed = args.speed;
     let quantity = args.quantity;
     let notree = args.notree;
+    let rainbow = args.rainbow;
 
     // Setup
     terminal::enable_raw_mode().unwrap();
@@ -63,11 +91,7 @@ fn main() {
 
     loop {
         // Generate new snowflake
-        let new_snowflake = Snowflake {
-            x: rand::random::<u16>() % width,
-            y: 0,
-            color: Color::White,
-        };
+        let new_snowflake = get_snowflake(rainbow, width);
         snowflakes.push(new_snowflake);
 
         // Render tree if enabled
@@ -117,11 +141,7 @@ fn main() {
         // Add new snowflakes
         for _ in 1..quantity {
             // for quantity
-            let new_snowflake = Snowflake {
-                x: rand::random::<u16>() % width,
-                y: 0,
-                color: Color::White,
-            };
+            let new_snowflake = get_snowflake(rainbow, width);
             snowflakes.push(new_snowflake);
         }
 
