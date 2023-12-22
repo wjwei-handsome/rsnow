@@ -1,3 +1,4 @@
+use clap::Parser;
 use crossterm::{
     cursor,
     event::{self, KeyCode, KeyEvent, KeyEventKind},
@@ -17,12 +18,36 @@ const TREE4: &str = " ******* ";
 const STOC1: &str = "   | |   ";
 const STOC2: &str = "   | |   ";
 
+/// Merry Christmas!
+#[derive(Parser, Debug)]
+#[command(name = "rsnow", author, version, about, long_about = None)]
+struct Args {
+    /// Speed of snowfall
+    #[arg(short, long, default_value_t = 1, value_parser=clap::value_parser!(u16).range(1..=5))]
+    speed: u16,
+
+    /// Quantity of snowflakes
+    #[arg(short, long, default_value_t = 20, value_parser=clap::value_parser!(u8).range(0..=100))]
+    quantity: u8,
+
+    /// If you want to remove the Christmas tree
+    #[arg(short, long, default_value_t = false)]
+    notree: bool,
+}
+
 struct Snowflake {
     x: u16,
     y: u16,
+    color: Color,
 }
 
 fn main() {
+    // CLI
+    let args = Args::parse();
+    let speed = args.speed;
+    let quantity = args.quantity;
+    let notree = args.notree;
+
     // Setup
     terminal::enable_raw_mode().unwrap();
     // Get terminal size
@@ -41,36 +66,39 @@ fn main() {
         let new_snowflake = Snowflake {
             x: rand::random::<u16>() % width,
             y: 0,
+            color: Color::White,
         };
         snowflakes.push(new_snowflake);
 
-        // Render trees
-        let tree_pos = width / 2 - 6;
-        execute!(
-            stdout(),
-            cursor::MoveTo(tree_pos, height - 6),
-            SetForegroundColor(Color::Green),
-            Print(TREE1),
-            cursor::MoveTo(tree_pos, height - 5),
-            Print(TREE2),
-            cursor::MoveTo(tree_pos, height - 4),
-            Print(TREE3),
-            cursor::MoveTo(tree_pos, height - 3),
-            Print(TREE4),
-            cursor::MoveTo(tree_pos, height - 2),
-            SetForegroundColor(Color::Red),
-            Print(STOC1),
-            cursor::MoveTo(tree_pos, height - 1),
-            Print(STOC2),
-        )
-        .unwrap();
+        // Render tree if enabled
+        if !notree {
+            let tree_pos = width / 2 - 6;
+            execute!(
+                stdout(),
+                cursor::MoveTo(tree_pos, height - 6),
+                SetForegroundColor(Color::Green),
+                Print(TREE1),
+                cursor::MoveTo(tree_pos, height - 5),
+                Print(TREE2),
+                cursor::MoveTo(tree_pos, height - 4),
+                Print(TREE3),
+                cursor::MoveTo(tree_pos, height - 3),
+                Print(TREE4),
+                cursor::MoveTo(tree_pos, height - 2),
+                SetForegroundColor(Color::Red),
+                Print(STOC1),
+                cursor::MoveTo(tree_pos, height - 1),
+                Print(STOC2),
+            )
+            .unwrap();
+        }
 
         // Render snowflakes
         for flake in &snowflakes {
             execute!(
                 stdout(),
                 cursor::MoveTo(flake.x, flake.y),
-                SetForegroundColor(Color::White),
+                SetForegroundColor(flake.color),
                 Print(SNOWFLAKE),
             )
             .unwrap();
@@ -81,10 +109,21 @@ fn main() {
             .into_iter()
             .filter(|flake| flake.y < height - 1)
             .map(|mut flake| {
-                flake.y += 1;
+                flake.y += speed; // speed
                 flake
             })
             .collect();
+
+        // Add new snowflakes
+        for _ in 1..quantity {
+            // for quantity
+            let new_snowflake = Snowflake {
+                x: rand::random::<u16>() % width,
+                y: 0,
+                color: Color::White,
+            };
+            snowflakes.push(new_snowflake);
+        }
 
         // Refresh the terminal
         execute!(stdout(), cursor::MoveTo(0, 0)).unwrap();
