@@ -9,7 +9,16 @@ use crossterm::{
 use std::io::stdout;
 use std::{thread, time};
 
-const SNOWFLAKE: char = '❄';
+const SNOWFLAKE1: char = '❄';
+const SNOWFLAKE2: char = '❅';
+const SNOWFLAKE3: char = '❆';
+const SNOWFLAKE4: char = '❉';
+const SNOWFLAKE5: char = '❊';
+const SNOWFLAKE6: char = '❋';
+
+const SF_CANDIDATES: [char; 6] = [
+    SNOWFLAKE1, SNOWFLAKE2, SNOWFLAKE3, SNOWFLAKE4, SNOWFLAKE5, SNOWFLAKE6,
+];
 
 const TREE1: &str = "    *    ";
 const TREE2: &str = "   ***   ";
@@ -30,22 +39,27 @@ struct Args {
     #[arg(short, long, default_value_t = 20, value_parser=clap::value_parser!(u8).range(0..=100))]
     quantity: u8,
 
-    /// If you want to remove the Christmas tree
-    #[arg(short, long, default_value_t = false)]
-    notree: bool,
-
-    /// If rainbow mode is enabled
+    /// Bool, If rainbow mode is enabled [default is false]
     #[arg(short, long, default_value_t = false)]
     rainbow: bool,
+
+    /// Bool, If random shape mode is enabled [default is false]
+    #[arg(short = 't', long = "randomtype", default_value_t = false)]
+    random: bool,
+
+    /// Bool, If you want to remove the Christmas tree [default is false]
+    #[arg(short, long, default_value_t = false)]
+    notree: bool,
 }
 
 struct Snowflake {
     x: u16,
     y: u16,
     color: Color,
+    shape: char,
 }
 
-fn get_snowflake(rainbow: bool, width: u16) -> Snowflake {
+fn get_snowflake(random: bool, rainbow: bool, width: u16) -> Snowflake {
     // Default color is white
     let mut color = Color::White;
     // Generate random color if rainbow mode is enabled
@@ -60,11 +74,19 @@ fn get_snowflake(rainbow: bool, width: u16) -> Snowflake {
         }
     }
 
+    // Default shape
+    let mut shape = SNOWFLAKE1;
+    // Generate random shape if random mode is enabled
+    if random {
+        shape = SF_CANDIDATES[rand::random::<usize>() % 6];
+    }
+
     // Return snowflake
     Snowflake {
         x: rand::random::<u16>() % width,
         y: 0,
         color,
+        shape,
     }
 }
 
@@ -75,6 +97,7 @@ fn main() {
     let quantity = args.quantity;
     let notree = args.notree;
     let rainbow = args.rainbow;
+    let random = args.random;
 
     // Setup
     terminal::enable_raw_mode().unwrap();
@@ -91,7 +114,7 @@ fn main() {
 
     loop {
         // Generate new snowflake
-        let new_snowflake = get_snowflake(rainbow, width);
+        let new_snowflake = get_snowflake(random, rainbow, width);
         snowflakes.push(new_snowflake);
 
         // Render tree if enabled
@@ -123,7 +146,7 @@ fn main() {
                 stdout(),
                 cursor::MoveTo(flake.x, flake.y),
                 SetForegroundColor(flake.color),
-                Print(SNOWFLAKE),
+                Print(flake.shape),
             )
             .unwrap();
         }
@@ -141,7 +164,7 @@ fn main() {
         // Add new snowflakes
         for _ in 1..quantity {
             // for quantity
-            let new_snowflake = get_snowflake(rainbow, width);
+            let new_snowflake = get_snowflake(random, rainbow, width);
             snowflakes.push(new_snowflake);
         }
 
