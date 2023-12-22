@@ -101,10 +101,6 @@ fn main() {
 
     // Setup
     terminal::enable_raw_mode().unwrap();
-    // Get terminal size
-    let size = terminal::size().unwrap();
-    let width = size.0;
-    let height = size.1;
 
     // Clear the terminal
     execute!(stdout(), terminal::Clear(ClearType::All), cursor::Hide).unwrap();
@@ -113,6 +109,11 @@ fn main() {
     let mut snowflakes: Vec<Snowflake> = Vec::new();
 
     loop {
+        // Get terminal size
+        let size = terminal::size().unwrap();
+        let width = size.0;
+        let height = size.1;
+
         // Generate new snowflake
         let new_snowflake = get_snowflake(random, rainbow, width);
         snowflakes.push(new_snowflake);
