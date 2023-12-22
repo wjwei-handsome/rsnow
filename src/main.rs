@@ -10,6 +10,13 @@ use std::{thread, time};
 
 const SNOWFLAKE: char = '❄';
 
+const TREE1: &str = "    *    ";
+const TREE2: &str = "   ***   ";
+const TREE3: &str = "  *****  ";
+const TREE4: &str = " ******* ";
+const STOC1: &str = "   | |   ";
+const STOC2: &str = "   | |   ";
+
 struct Snowflake {
     x: u16,
     y: u16,
@@ -37,6 +44,27 @@ fn main() {
         };
         snowflakes.push(new_snowflake);
 
+        // Render trees
+        let tree_pos = width / 2 - 6;
+        execute!(
+            stdout(),
+            cursor::MoveTo(tree_pos, height - 6),
+            SetForegroundColor(Color::Green),
+            Print(TREE1),
+            cursor::MoveTo(tree_pos, height - 5),
+            Print(TREE2),
+            cursor::MoveTo(tree_pos, height - 4),
+            Print(TREE3),
+            cursor::MoveTo(tree_pos, height - 3),
+            Print(TREE4),
+            cursor::MoveTo(tree_pos, height - 2),
+            SetForegroundColor(Color::Red),
+            Print(STOC1),
+            cursor::MoveTo(tree_pos, height - 1),
+            Print(STOC2),
+        )
+        .unwrap();
+
         // Render snowflakes
         for flake in &snowflakes {
             execute!(
@@ -62,7 +90,7 @@ fn main() {
         execute!(stdout(), cursor::MoveTo(0, 0)).unwrap();
 
         // Sleep to control the falling speed
-        thread::sleep(time::Duration::from_millis(10));
+        thread::sleep(time::Duration::from_millis(100));
 
         // Check for exit
         if event::poll(time::Duration::from_millis(0)).unwrap() {
