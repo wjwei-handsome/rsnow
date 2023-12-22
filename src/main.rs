@@ -90,7 +90,7 @@ fn get_snowflake(random: bool, rainbow: bool, width: u16) -> Snowflake {
     }
 }
 
-fn main() {
+fn main() -> std::io::Result<()> {
     // CLI
     let args = Args::parse();
     let speed = args.speed;
@@ -100,17 +100,17 @@ fn main() {
     let random = args.random;
 
     // Setup
-    terminal::enable_raw_mode().unwrap();
+    terminal::enable_raw_mode()?;
 
     // Clear the terminal
-    execute!(stdout(), terminal::Clear(ClearType::All), cursor::Hide).unwrap();
+    execute!(stdout(), terminal::Clear(ClearType::All), cursor::Hide)?;
 
     // Initialize snowflakes
     let mut snowflakes: Vec<Snowflake> = Vec::new();
 
     loop {
         // Get terminal size
-        let size = terminal::size().unwrap();
+        let size = terminal::size()?;
         let width = size.0;
         let height = size.1;
 
@@ -137,8 +137,7 @@ fn main() {
                 Print(STOC1),
                 cursor::MoveTo(tree_pos, height - 1),
                 Print(STOC2),
-            )
-            .unwrap();
+            )?;
         }
 
         // Render snowflakes
@@ -148,8 +147,7 @@ fn main() {
                 cursor::MoveTo(flake.x, flake.y),
                 SetForegroundColor(flake.color),
                 Print(flake.shape),
-            )
-            .unwrap();
+            )?;
         }
 
         // Move snowflakes down
@@ -170,19 +168,19 @@ fn main() {
         }
 
         // Refresh the terminal
-        execute!(stdout(), cursor::MoveTo(0, 0)).unwrap();
+        execute!(stdout(), cursor::MoveTo(0, 0))?;
 
         // Sleep to control the falling speed
         thread::sleep(time::Duration::from_millis(100));
 
         // Check for exit
-        if event::poll(time::Duration::from_millis(0)).unwrap() {
+        if event::poll(time::Duration::from_millis(0))? {
             if let event::Event::Key(KeyEvent {
                 code,
                 modifiers: _,
                 state: _,
                 kind,
-            }) = event::read().unwrap()
+            }) = event::read()?
             {
                 if code == KeyCode::Char('q') && kind == KeyEventKind::Press {
                     break;
@@ -191,10 +189,11 @@ fn main() {
         }
 
         // Clear the terminal
-        execute!(stdout(), terminal::Clear(ClearType::All),).unwrap();
+        execute!(stdout(), terminal::Clear(ClearType::All),)?;
     }
 
     // Clean up
-    execute!(stdout(), cursor::Show, terminal::Clear(ClearType::All)).unwrap();
-    terminal::disable_raw_mode().unwrap();
+    execute!(stdout(), cursor::Show, terminal::Clear(ClearType::All))?;
+    terminal::disable_raw_mode()?;
+    Ok(())
 }
