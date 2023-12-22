@@ -39,15 +39,15 @@ struct Args {
     #[arg(short, long, default_value_t = 20, value_parser=clap::value_parser!(u8).range(0..=100))]
     quantity: u8,
 
-    /// Bool, If rainbow mode is enabled [default is false]
+    /// Bool, enabled rainbow color [default is false]
     #[arg(short, long, default_value_t = false)]
     rainbow: bool,
 
-    /// Bool, If random shape mode is enabled [default is false]
+    /// Bool, enabled random shape [default is false]
     #[arg(short = 't', long = "randomtype", default_value_t = false)]
     random: bool,
 
-    /// Bool, If you want to remove the Christmas tree [default is false]
+    /// Bool, remove the Christmas tree [default is false]
     #[arg(short, long, default_value_t = false)]
     notree: bool,
 }
